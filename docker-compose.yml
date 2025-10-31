@@ -1,0 +1,53 @@
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: postgres_finance
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - finance-network
+
+  backend:
+    build:
+      context: ./backend/Finance 
+    container_name: backend_finance
+    depends_on:
+      - postgres_db
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL_DOCKER}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SERVER_PORT=${SERVER_PORT}
+    networks:
+      - finance-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend_finance
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - finance-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  finance-network:
+    driver: bridge
+
+
+

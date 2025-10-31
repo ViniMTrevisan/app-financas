@@ -1,0 +1,9 @@
+# Segredos
+.env
+
+# Arquivos de IDE (se estiver abrindo a raiz no IDE)
+.idea/
+.vscode/
+
+# Arquivos de OS
+.DS_Store
