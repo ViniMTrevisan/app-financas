@@ -1,0 +1,8 @@
+# Pasta de dependências do Node (o Docker vai instalar a sua própria)
+node_modules
+
+# Pasta de build local (o Docker vai criar a sua própria)
+.next
+
+# Arquivo de log do NPM
+npm-debug.log
