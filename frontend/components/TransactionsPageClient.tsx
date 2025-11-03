@@ -22,7 +22,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-// O import do ThemeToggle foi REMOVIDO
 
 interface Props {
   initialTransactions: Transaction[];
@@ -64,22 +63,29 @@ export default function TransactionsPageClient({ initialTransactions }: Props) {
     loadInitialData(); 
   }, []); 
 
+  // *** A CORREÇÃO ESTÁ AQUI (DENTRO DO useMemo) ***
   const transactionsToShow = useMemo(() => {
-    let filteredTransactions = transactions; 
-    if (activeFilter !== "ALL") {
-      filteredTransactions = filteredTransactions.filter(tx => tx.type === activeFilter);
-    }
-    if (dateRange.start && dateRange.end) {
-      filteredTransactions = filteredTransactions.filter(tx => 
-        tx.date >= dateRange.start && tx.date <= dateRange.end
-      );
-    }
-    if (selectedCategory !== "ALL") {
-      filteredTransactions = filteredTransactions.filter(tx => 
-        tx.category && tx.category.id === selectedCategory
-      );
-    }
-    return filteredTransactions;
+    // 1. Armazena os valores de data de forma segura
+    const { start, end } = dateRange;
+
+    return transactions
+      .filter(tx => {
+        // 2. Filtro de TIPO
+        if (activeFilter === 'ALL') return true;
+        return tx.type === activeFilter;
+      })
+      .filter(tx => {
+        // 3. Filtro de DATA (agora 100% seguro contra 'null')
+        // Se 'start' ou 'end' forem nulos, o filtro de data é ignorado
+        if (!start || !end) return true;
+        return tx.date >= start && tx.date <= end;
+      })
+      .filter(tx => {
+        // 4. Filtro de CATEGORIA
+        if (selectedCategory === 'ALL') return true;
+        return tx.category && tx.category.id === selectedCategory;
+      });
+      
   }, [transactions, activeFilter, dateRange, selectedCategory]); 
 
   const handleDeleteTransaction = async (id: number) => {
@@ -100,10 +106,6 @@ export default function TransactionsPageClient({ initialTransactions }: Props) {
   return (
     <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
       
-      {/* *** CORREÇÃO AQUI ***
-        - O wrapper <div> e o <ThemeToggle /> foram removidos.
-        - O 'text-gray-800' foi removido do <h1>
-      */}
       <h1 className="text-4xl font-bold mb-8">Meu App de Finanças</h1>
 
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -156,13 +158,10 @@ export default function TransactionsPageClient({ initialTransactions }: Props) {
                   <li className="py-2 text-gray-500 text-center">Carregando...</li>
                 ) : transactionsToShow.length > 0 ? (
                   transactionsToShow.map((tx) => (
-                    
-                    // *** CORREÇÃO AQUI: 'text-black' removido ***
                     <li key={tx.id} className="py-2 flex items-center gap-4">
                       
                       <div className="flex-grow">
                         <span className="font-medium block">{tx.description}</span>
-                        {/* 'text-gray-500' mudado para 'text-muted-foreground' */}
                         <span className="text-xs text-muted-foreground block">
                           {tx.category ? tx.category.name : 'Sem Categoria'}
                         </span>
@@ -172,7 +171,6 @@ export default function TransactionsPageClient({ initialTransactions }: Props) {
                         <span className={`font-medium ${tx.type === "INCOME" ? "text-green-600" : "text-red-600"}`}>
                           {tx.type === "INCOME" ? "+" : "-"} R$ {tx.amount.toFixed(2)}
                         </span>
-                         {/* 'text-gray-500' mudado para 'text-muted-foreground' */}
                         <span className="text-xs text-muted-foreground block">{tx.date}</span>
                       </div>
 
@@ -203,7 +201,7 @@ export default function TransactionsPageClient({ initialTransactions }: Props) {
         </div>
       </div>
 
-      {/* --- MODAIS (Ficam fora do grid) --- */}
+      {/* --- MODAIS --- */}
       {isCategoryModalOpen && (
         <ManageCategoriesModal
           isOpen={isCategoryModalOpen}
