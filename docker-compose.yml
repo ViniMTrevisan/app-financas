@@ -16,6 +16,7 @@ services:
       - finance-network
 
   backend:
+    image: viniciusmtrevisan/finance-backend
     build:
       context: ./backend/Finance
     container_name: backend_finance
@@ -35,6 +36,7 @@ services:
       - finance-network
 
   frontend:
+    image: viniciusmtrevisan/finance-frontend
     build:
       context: ./frontend
     container_name: frontend_finance
