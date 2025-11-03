@@ -1,4 +1,4 @@
-import { summaryDTO, Transaction, TransactionCreateDTO } from "./types";
+import { Category, CategoryRequestDTO, summaryDTO, Transaction, TransactionCreateDTO } from "./types";
 
 const API_URL = 'http://localhost:8081/api'
 
@@ -13,16 +13,31 @@ export async function getAllTransactions(): Promise<Transaction[]> {
             throw new Error("Failed to fetch transactions")
         }
         return res.json();
-    } catch {
-        console.error(Error);
+    } catch (error){
+        console.error(error);
         return [];
     }
+}
+
+export async function getTransactionsByCategory(categoryId: number): Promise<Transaction[]> {
+  try {
+    const res = await fetch(`${API_URL}/findByCategory?categoryId=${categoryId}`, {
+      cache: "no-store"
+    });
+    if (!res.ok) {
+      throw new Error("Falha ao buscar transações por categoria");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 // busca transaction por id; se nao achar retorna null
 export async function getTransactionById(id: number): Promise<Transaction | null> {
     try {
-        const res = await fetch(`{API_URL}/transactions/${id}`, {
+        const res = await fetch(`${API_URL}/transactions/${id}`, {
             cache: "no-store"
         })
         if (!res.ok) {
@@ -59,7 +74,7 @@ export async function updateTransaction(
     const res = await fetch(`${API_URL}/transactions/${id}`, {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application.json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
     });
@@ -157,5 +172,58 @@ export async function getTransactionsByType(type: 'INCOME' | 'EXPENSE'): Promise
     } catch (error) {
         console.error(error);
         return [];
+    }
+}
+
+export async function getAllCategories(): Promise<Category[]> {
+    try {
+        const res = await fetch(`${API_URL}/categories`, {
+            cache: "no-store"
+        });
+        if (!res.ok) {
+            throw new Error("Failed to fetch categories");
+        }
+        return res.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export async function createCategory(data: CategoryRequestDTO): Promise<Category> {
+    const res = await fetch(`${API_URL}/categories`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        throw new Error("Failed to create new category");
+    }
+    return res.json();
+}
+
+export async function updateCategory(id: number, data: CategoryRequestDTO): Promise<Category> {
+    const res = await fetch(`${API_URL}/categories/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update category");
+    }
+    return res.json();
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+    const res = await fetch(`${API_URL}/categories/${id}`, {
+        method: 'DELETE',
+    });
+    if (!res.ok) {
+        throw new Error("Failed to delete category");
     }
 }

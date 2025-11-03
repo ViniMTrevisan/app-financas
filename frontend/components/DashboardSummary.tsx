@@ -1,43 +1,65 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { getBalance, getWeeklySummary, getMonthlySummary } from "@/lib/api";
-import { summaryDTO } from "@/lib/types";
+import { summaryDTO, Transaction } from "@/lib/types";
 
-export default async function DashboardSummary() {
-  let balance: summaryDTO | null = null;
-  let weekly: summaryDTO | null = null;
-  let monthly: summaryDTO | null = null;
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-  try {
-    [balance, weekly, monthly] = await Promise.all([
-      getBalance(),
-      getWeeklySummary(),
-      getMonthlySummary(),
-    ]);
-  } catch (error) {
-    console.error("Erro ao carregar dados do dashboard:", error);
-  }
+interface DashboardProps {
+  transactions: Transaction[];
+}
+
+export default function DashboardSummary({ transactions }: DashboardProps) {
+  const [balance, setBalance] = useState<summaryDTO | null>(null);
+  const [weekly, setWeekly] = useState<summaryDTO | null>(null);
+  const [monthly, setMonthly] = useState<summaryDTO | null>(null);
+
+  useEffect(() => {
+    async function fetchSummary() {
+      try {
+        const [b, w, m] = await Promise.all([
+          getBalance(),
+          getWeeklySummary(),
+          getMonthlySummary(),
+        ]);
+        setBalance(b);
+        setWeekly(w);
+        setMonthly(m);
+      } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err);
+      }
+    }
+    fetchSummary();
+  }, [transactions]);
 
   return (
     <section className="w-full max-w-2xl mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <Card
+      <SummaryCard
         title="Saldo Total"
         value={balance ? balance.netBalance : 0}
         highlight
       />
-      <Card
+      <SummaryCard
         title="Resumo Semanal"
         value={weekly ? weekly.netBalance : 0}
+        highlight
       />
-      <Card
+      <SummaryCard
         title="Resumo Mensal"
         value={monthly ? monthly.netBalance : 0}
+        highlight
       />
     </section>
   );
 }
 
-// Componente interno para reaproveitar estilo
-function Card({
+function SummaryCard({
   title,
   value,
   highlight = false,
@@ -47,17 +69,23 @@ function Card({
   highlight?: boolean;
 }) {
   const color = value >= 0 ? "text-green-600" : "text-red-600";
+  const finalColor = value === 0 ? "text-gray-500" : color;
 
   return (
-    <div
-      className={`bg-white shadow rounded-lg p-4 text-center ${
-        highlight ? "border-2 border-blue-500" : ""
-      }`}
-    >
-      <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-      <p className={`text-2xl font-bold ${color}`}>
-        R$ {value.toFixed(2)}
-      </p>
-    </div>
+    <Card className={highlight ? "border-2 border-primary" : ""}>
+      <CardHeader className="pb-2 text-center">
+        
+        {/* *** CORREÇÃO: 'text-muted-foreground' é a cor cinza claro do shadcn *** */}
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="text-center">
+        <p className={`text-2xl font-bold ${finalColor}`}>
+          {value < 0 ? "-R$ " : "R$ "}
+          {Math.abs(value).toFixed(2)}
+        </p>
+      </CardContent>
+    </Card>
   );
 }

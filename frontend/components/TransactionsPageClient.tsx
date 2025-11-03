@@ -1,61 +1,237 @@
 "use client";
 
-import React, { useState } from "react";
-import { Transaction } from "@/lib/types";
+import React, { useState, useMemo, useEffect } from "react";
+import { Transaction, Category } from "@/lib/types"; 
+import { getAllTransactions, deleteTransaction, getAllCategories } from "@/lib/api";
+
+// Nossos Componentes de UI
 import AddTransactionForm from "@/components/AddTransactionForm";
 import DashboardSummary from "@/components/DashboardSummary";
 import TransactionsFilter from "@/components/TransactionsFilter";
+import EditTransactionModal from "@/components/EditTransactionModal";
+import DeleteTransactionModal from "@/components/DeleteTransactionModal";
+import TransactionChart from '@/components/TransactionChart';
+import DateRangeFilter from "@/components/DateRangeFilter";
+import CategoryFilter from "@/components/CategoryFilter"; 
+import ManageCategoriesModal from "@/components/ManageCategoriesModal";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+// O import do ThemeToggle foi REMOVIDO
 
 interface Props {
   initialTransactions: Transaction[];
 }
 
 export default function TransactionsPageClient({ initialTransactions }: Props) {
-  const [filterTransactions, setFilterTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [categories, setCategories] = useState<Category[]>([]); 
+  const [activeFilter, setActiveFilter] = useState<"ALL" | "INCOME" | "EXPENSE">("ALL");
+  const [isLoading, setIsLoading] = useState(true); 
+  const [dateRange, setDateRange] = useState<{ start: string | null, end: string | null }>({
+    start: null,
+    end: null,
+  });
+  const [selectedCategory, setSelectedCategory] = useState<number | "ALL">("ALL");
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
+  const [deleteTransactionTarget, setDeleteTransactionTarget] = useState<Transaction | null>(null);
 
-  // Se há filtro ativo, mostra ele; senão mostra todas as transações iniciais
-  const transactionsToShow =
-    filterTransactions.length > 0 ? filterTransactions : initialTransactions;
+  useEffect(() => {
+    async function loadInitialData() {
+      setIsLoading(true);
+      try {
+        const [transactionsData, categoriesData] = await Promise.all([
+          getAllTransactions(),
+          getAllCategories()
+        ]);
+        
+        const sortedData = transactionsData.sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        setTransactions(sortedData); 
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      }
+      setIsLoading(false);
+    }
+    loadInitialData(); 
+  }, []); 
+
+  const transactionsToShow = useMemo(() => {
+    let filteredTransactions = transactions; 
+    if (activeFilter !== "ALL") {
+      filteredTransactions = filteredTransactions.filter(tx => tx.type === activeFilter);
+    }
+    if (dateRange.start && dateRange.end) {
+      filteredTransactions = filteredTransactions.filter(tx => 
+        tx.date >= dateRange.start && tx.date <= dateRange.end
+      );
+    }
+    if (selectedCategory !== "ALL") {
+      filteredTransactions = filteredTransactions.filter(tx => 
+        tx.category && tx.category.id === selectedCategory
+      );
+    }
+    return filteredTransactions;
+  }, [transactions, activeFilter, dateRange, selectedCategory]); 
+
+  const handleDeleteTransaction = async (id: number) => {
+    try {
+      await deleteTransaction(id);
+      setTransactions((prev) =>
+        prev.filter((t) => t.id !== id)
+      );
+      setDeleteTransactionTarget(null); 
+    } catch (error) {
+      console.error("Erro ao deletar transação:", error);
+      toast.error("Erro ao Deletar", {
+        description: "Não foi possível remover esta transação."
+      });
+    }
+  };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-24 bg-gray-50">
-      <h1 className="text-4xl font-bold mb-8 text-gray-800">
-        Meu App de Finanças
-      </h1>
+    <main className="flex min-h-screen flex-col items-center p-6 md:p-24">
+      
+      {/* *** CORREÇÃO AQUI ***
+        - O wrapper <div> e o <ThemeToggle /> foram removidos.
+        - O 'text-gray-800' foi removido do <h1>
+      */}
+      <h1 className="text-4xl font-bold mb-8">Meu App de Finanças</h1>
 
-      <DashboardSummary />
-      <AddTransactionForm />
+      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <TransactionsFilter 
-      transactions={initialTransactions}
-      onFilterChange={setFilterTransactions} />
+        {/* --- COLUNA ESQUERDA (AÇÕES / FORMULÁRIOS) --- */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          <AddTransactionForm 
+            setTransactions={setTransactions} 
+            categories={categories} 
+          />
+          <CategoryFilter 
+            onCategoryChange={setSelectedCategory} 
+            categories={categories}
+            onManageClick={() => setIsCategoryModalOpen(true)}
+          />
+          <DateRangeFilter 
+            onFilter={(range) => setDateRange(range)} 
+            onClear={() => setDateRange({ start: null, end: null })} 
+          />
+        </div>
 
-      <div className="bg-white shadow rounded-lg p-4 w-full max-w-2xl mt-6">
-        <h2 className="text-xl font-semibold mb-4 text-black">Transações</h2>
-        <ul className="divide-y divide-gray-200">
-          {transactionsToShow.length > 0 ? (
-            transactionsToShow.map((tx) => (
-              <li
-                key={tx.id}
-                className="py-2 flex justify-between text-black"
-              >
-                <span>{tx.description}</span>
-                <span
-                  className={
-                    tx.type === "INCOME" ? "text-green-600" : "text-red-600"
-                  }
-                >
-                  {tx.type === "INCOME" ? "+" : "-"} R$ {tx.amount.toFixed(2)}
-                </span>
-              </li>
-            ))
-          ) : (
-            <li className="py-2 text-gray-500 text-center">
-              Nenhuma transação encontrada.
-            </li>
-          )}
-        </ul>
+        {/* --- COLUNA DIREITA (DADOS / RESULTADOS) --- */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          
+          <DashboardSummary transactions={transactions} />
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Visão Geral</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <TransactionsFilter
+                activeFilter={activeFilter}
+                onFilterChange={setActiveFilter}
+              />
+              <TransactionChart 
+                transactions={transactionsToShow} 
+                activeFilter={activeFilter} 
+              />
+            </CardContent>
+          </Card>
+          
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-lg">Transações Recentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y divide-gray-200 overflow-y-auto max-h-[500px]">
+                {isLoading ? (
+                  <li className="py-2 text-gray-500 text-center">Carregando...</li>
+                ) : transactionsToShow.length > 0 ? (
+                  transactionsToShow.map((tx) => (
+                    
+                    // *** CORREÇÃO AQUI: 'text-black' removido ***
+                    <li key={tx.id} className="py-2 flex items-center gap-4">
+                      
+                      <div className="flex-grow">
+                        <span className="font-medium block">{tx.description}</span>
+                        {/* 'text-gray-500' mudado para 'text-muted-foreground' */}
+                        <span className="text-xs text-muted-foreground block">
+                          {tx.category ? tx.category.name : 'Sem Categoria'}
+                        </span>
+                      </div>
+
+                      <div className="flex-shrink-0 w-32 text-right">
+                        <span className={`font-medium ${tx.type === "INCOME" ? "text-green-600" : "text-red-600"}`}>
+                          {tx.type === "INCOME" ? "+" : "-"} R$ {tx.amount.toFixed(2)}
+                        </span>
+                         {/* 'text-gray-500' mudado para 'text-muted-foreground' */}
+                        <span className="text-xs text-muted-foreground block">{tx.date}</span>
+                      </div>
+
+                      <div className="flex-shrink-0 flex flex-col gap-1 ml-2">
+                        <Button
+                          variant="ghost" size="sm"       
+                          onClick={() => setEditTransaction(tx)}
+                          className="text-blue-600 hover:text-blue-700 h-6"
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="ghost" size="sm"       
+                          onClick={() => setDeleteTransactionTarget(tx)}
+                          className="text-red-600 hover:text-red-700 h-6"
+                        >
+                          Excluir
+                        </Button>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li className="py-2 text-gray-500 text-center">Nenhuma transação encontrada.</li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* --- MODAIS (Ficam fora do grid) --- */}
+      {isCategoryModalOpen && (
+        <ManageCategoriesModal
+          isOpen={isCategoryModalOpen}
+          onClose={() => setIsCategoryModalOpen(false)}
+          categories={categories}
+          setCategories={setCategories}
+        />
+      )}
+      {editTransaction && (
+        <EditTransactionModal
+          transaction={editTransaction}
+          onCancel={() => setEditTransaction(null)}
+          onSave={(updated) => {
+            setTransactions((prev) =>
+              prev.map((t) => (t.id === updated.id ? updated : t))
+            );
+            setEditTransaction(null);
+          }}
+          categories={categories}
+        />
+      )}
+      {deleteTransactionTarget && (
+        <DeleteTransactionModal
+          transaction={deleteTransactionTarget} 
+          onCancel={() => setDeleteTransactionTarget(null)}
+          onConfirm={handleDeleteTransaction}
+        />
+      )}
     </main>
   );
 }

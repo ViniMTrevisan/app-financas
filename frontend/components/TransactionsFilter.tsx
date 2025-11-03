@@ -1,64 +1,44 @@
 "use client";
 
 import React from "react";
-import { Transaction } from "@/lib/types";
+// 1. Importar o novo componente de botão
+import { Button } from "@/components/ui/button";
 
 interface TransactionFilterProps {
-  transactions: Transaction[];
-  onFilterChange: (filtered: Transaction[]) => void;
+  activeFilter: "ALL" | "INCOME" | "EXPENSE";
+  onFilterChange: (type: "ALL" | "INCOME" | "EXPENSE") => void;
 }
 
-export default function TransactionFilter({
-  transactions,
+export default function TransactionsFilter({
+  activeFilter,
   onFilterChange,
 }: TransactionFilterProps) {
-  const [activeFilter, setActiveFilter] = React.useState<"ALL" | "INCOME" | "EXPENSE">("ALL");
-
   const handleFilterClick = (type: "ALL" | "INCOME" | "EXPENSE") => {
-    setActiveFilter(type);
-
-    if (type === "ALL") {
-      onFilterChange([]); // mostra todas
-    } else {
-      const filtered = transactions.filter((t) => t.type === type);
-      onFilterChange(filtered);
-    }
+    onFilterChange(type);
   };
+
+  // 2. Definir os filtros como um array de objetos para mais controle
+  const filters = [
+    { label: "Todas", value: "ALL" },
+    { label: "Receitas", value: "INCOME" },
+    { label: "Despesas", value: "EXPENSE" },
+  ];
 
   return (
     <div className="flex gap-4 my-6">
-      <button
-        onClick={() => handleFilterClick("ALL")}
-        className={`px-4 py-2 rounded-md border transition ${
-          activeFilter === "ALL"
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300"
-        }`}
-      >
-        Todas
-      </button>
-
-      <button
-        onClick={() => handleFilterClick("INCOME")}
-        className={`px-4 py-2 rounded-md border transition ${
-          activeFilter === "INCOME"
-            ? "bg-green-600 text-white border-green-600"
-            : "bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300"
-        }`}
-      >
-        Receitas
-      </button>
-
-      <button
-        onClick={() => handleFilterClick("EXPENSE")}
-        className={`px-4 py-2 rounded-md border transition ${
-          activeFilter === "EXPENSE"
-            ? "bg-red-600 text-white border-red-600"
-            : "bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300"
-        }`}
-      >
-        Despesas
-      </button>
+      {filters.map((filter) => (
+        // 3. Substituir o <button> HTML pelo <Button> do shadcn
+        <Button
+          key={filter.value}
+          onClick={() => handleFilterClick(filter.value as "ALL" | "INCOME" | "EXPENSE")}
+          // 4. Lógica de estilo:
+          //    - "default" = usa a cor primária (seu verde musgo)
+          //    - "outline" = usa a cor de borda (cinza/neutro)
+          variant={activeFilter === filter.value ? "default" : "outline"}
+        >
+          {filter.label}
+        </Button>
+      ))}
     </div>
   );
 }

@@ -1,11 +1,9 @@
-import { getAllTransactions } from "@/lib/api";
-import { Transaction } from "@/lib/types";
 import TransactionsPageClient from "@/components/TransactionsPageClient";
 
-export default async function Home() {
-  // Busca inicial no servidor
-  const transactions: Transaction[] = await getAllTransactions();
-
-  // Passa os dados para o componente client
-  return <TransactionsPageClient initialTransactions={transactions} />;
+// Esta página agora é um "Server Component" simples
+// que renderiza o "Client Component" que fará todo o trabalho.
+export default function Home() {
+  // Não buscamos mais dados aqui.
+  // Passamos um array vazio, o cliente vai se popular.
+  return <TransactionsPageClient initialTransactions={[]} />;
 }
