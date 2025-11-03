@@ -16,8 +16,8 @@ services:
       - finance-network 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5
+      interval: '10s'
+      timeout: '5'
       retries: 5
     restart: unless-stopped
 
