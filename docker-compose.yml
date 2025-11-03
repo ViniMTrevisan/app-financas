@@ -13,7 +13,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - finance-network
+      - finance-network 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5
+      retries: 5
+    restart: unless-stopped
 
   backend:
     image: viniciusmtrevisan/finance-backend
@@ -23,7 +29,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres_db
+      postgres_db:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_DOCKER}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
@@ -34,6 +41,7 @@ services:
       - "${SERVER_PORT}:${SERVER_PORT}"
     networks:
       - finance-network
+    restart: unless-stopped
 
   frontend:
     image: viniciusmtrevisan/finance-frontend
@@ -46,9 +54,11 @@ services:
       - backend
     networks:
       - finance-network
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  postgres_data: 
+    driver: local
 
 networks:
   finance-network:
