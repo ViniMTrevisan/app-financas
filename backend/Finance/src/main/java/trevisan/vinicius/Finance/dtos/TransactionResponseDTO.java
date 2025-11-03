@@ -15,4 +15,5 @@ public class TransactionResponseDTO {
     private String description;
     @Enumerated(EnumType.STRING)
     private TransactionType type;
+    private CategoryResponseDTO category;
 }

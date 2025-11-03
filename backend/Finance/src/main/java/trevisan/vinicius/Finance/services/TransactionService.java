@@ -64,8 +64,14 @@ public class TransactionService {
         return transactionRepository.findAllByDateBetween(start, end);
     }
 
+    public List<Transaction> findByCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new CategoryNotFound("Category with id " + categoryId + "not found")
+        );
+        return transactionRepository.findAllByCategory(category);
+    }
+
     public List<Transaction> findByType(TransactionType type) {
-        if (type == TransactionType.INCOME) {}
          return transactionRepository.findAllByType(type);
     }
 

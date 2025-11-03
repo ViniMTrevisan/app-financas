@@ -11,6 +11,7 @@ import trevisan.vinicius.Finance.dtos.SummaryDTO;
 import trevisan.vinicius.Finance.dtos.TransactionRequestDTO;
 import trevisan.vinicius.Finance.dtos.TransactionResponseDTO;
 import trevisan.vinicius.Finance.mappers.TransactionMapper;
+import trevisan.vinicius.Finance.model.Category;
 import trevisan.vinicius.Finance.model.TransactionType;
 import trevisan.vinicius.Finance.services.TransactionService;
 
@@ -59,6 +60,16 @@ public class TransactionController {
             TransactionType type
     ) {
         var transactions = transactionService.findByType(type);
+        List<TransactionResponseDTO> transactionDTO = transactionMapper.toDtoList(transactions);
+        return ResponseEntity.ok().body(transactionDTO);
+    }
+
+    @GetMapping("/findByCategory")
+    public ResponseEntity<?> findByCategory(
+            @RequestParam("category")
+            Long categoryId
+    ) {
+        var transactions = transactionService.findByCategory(categoryId);
         List<TransactionResponseDTO> transactionDTO = transactionMapper.toDtoList(transactions);
         return ResponseEntity.ok().body(transactionDTO);
     }

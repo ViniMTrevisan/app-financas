@@ -9,7 +9,7 @@ import trevisan.vinicius.Finance.model.Transaction;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {CategoryMapper.class})
 public interface TransactionMapper {
 
     @Mapping(target = "category", ignore = true)
