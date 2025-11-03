@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import trevisan.vinicius.Finance.model.Category;
 import trevisan.vinicius.Finance.model.Transaction;
 import trevisan.vinicius.Finance.model.TransactionType;
 
@@ -15,6 +16,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findAllByDateBetween(LocalDate start, LocalDate end);
 
     List<Transaction> findAllByType(TransactionType type);
+
+    List<Transaction> findAllByCategory(Category category);
 
     @Query("SELECT COALESCE(SUM(t.amount), 0.0) FROM Transaction t WHERE t.type = 'INCOME'")
     Double getTotalIncome();

@@ -7,11 +7,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import trevisan.vinicius.Finance.dtos.SummaryDTO;
 import trevisan.vinicius.Finance.dtos.TransactionRequestDTO;
 import trevisan.vinicius.Finance.dtos.TransactionResponseDTO;
+import trevisan.vinicius.Finance.exceptions.CategoryNotFound;
 import trevisan.vinicius.Finance.exceptions.InvalidDateException;
 import trevisan.vinicius.Finance.exceptions.TransactionNotFound;
 import trevisan.vinicius.Finance.mappers.TransactionMapper;
+import trevisan.vinicius.Finance.model.Category;
 import trevisan.vinicius.Finance.model.Transaction;
 import trevisan.vinicius.Finance.model.TransactionType;
+import trevisan.vinicius.Finance.repository.CategoryRepository;
 import trevisan.vinicius.Finance.repository.TransactionRepository;
 
 import java.time.LocalDate;
@@ -23,7 +26,7 @@ import java.util.List;
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
-
+    private final CategoryRepository categoryRepository;
     // api/balance
     public SummaryDTO getBalanceSummary() {
         Double income = transactionRepository.getTotalIncome();
@@ -67,7 +70,11 @@ public class TransactionService {
     }
 
     public TransactionResponseDTO createTransaction(TransactionRequestDTO requestDTO) {
+        Category category = categoryRepository.findById(requestDTO.getCategoryId()).orElseThrow(
+                () -> new CategoryNotFound("Category with id " + requestDTO.getCategoryId() + "not found")
+        );
         var transaction = transactionMapper.toEntity(requestDTO);
+        transaction.setCategory(category);
 
         var savedTransaction = transactionRepository.save(transaction);
 
@@ -97,10 +104,17 @@ public class TransactionService {
                 () -> new TransactionNotFound("Transaction not found")
         );
 
+        Category category = categoryRepository.findById(requestDTO.getCategoryId()).orElseThrow(
+                () -> new CategoryNotFound("Category with id " + requestDTO.getCategoryId() + "not found")
+        );
+
         transactionMapper.updateFromDto(requestDTO, transaction);
+
+        transaction.setCategory(category);
 
         return transactionMapper.toDto(transactionRepository.save(transaction));
     }
+
     public void deleteSingleTransaction(Long id) {
         var transaction = transactionRepository.findById(id).orElse(null);
         if (transaction == null) {

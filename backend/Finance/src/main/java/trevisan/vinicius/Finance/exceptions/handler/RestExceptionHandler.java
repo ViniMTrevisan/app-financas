@@ -5,6 +5,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import trevisan.vinicius.Finance.exceptions.CategoryNotFound;
 import trevisan.vinicius.Finance.exceptions.InvalidDateException;
 import trevisan.vinicius.Finance.exceptions.TransactionNotFound;
 
@@ -34,6 +35,12 @@ public class RestExceptionHandler {
         });
 
         return errors;
+    }
+
+    @ExceptionHandler(CategoryNotFound.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleCategoryNotFound(CategoryNotFound ex) {
+        return Map.of("erro", ex.getMessage());
     }
 }
 

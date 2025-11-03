@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Getter
 @Setter
-@Table(name = "Transactions")
+@Table(name = "transactions")
 @Entity
 public class Transaction {
     @Id
@@ -31,4 +31,7 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private TransactionType type;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category category;
 }
