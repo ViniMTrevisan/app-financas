@@ -46,7 +46,7 @@ Este projeto utiliza uma arquitetura de microsserviços desacoplada.
 
 - **Banco de Dados**: PostgreSQL (rodando em um container Docker)
 - **Containerização**: Docker & Docker Compose
-- **Deploy (Backend)**: AWS EC2 (Amazon Linux t2.micro)
+- **Deploy (Backend)**: AWS EC2 (Amazon Linux t3.micro)
 - **Deploy (Frontend)**: Vercel
 - **Rede (SSL/CORS)**: Caddy Reverse Proxy com DuckDNS (para domínio e HTTPS gratuitos)
 - **Registry de Imagens**: Docker Hub
@@ -100,7 +100,7 @@ docker-compose up -d postgres_db
 
 ### 4. Inicie o Backend (IntelliJ/VS Code)
 
-1. Abra a pasta `backend/` no seu IDE Java.
+1. Abra a pasta `backend/Finance` no seu IDE Java.
 2. Configure as Variáveis de Ambiente no seu "Run Configuration" (o IntelliJ **NÃO** lê o `.env` automaticamente):
    - `SERVER_PORT=8081`
    - `SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/finance`
@@ -129,11 +129,9 @@ Instruções de alto nível para o deploy híbrido Vercel/AWS:
 
 ### 1. Build e Push (Localmente)
 
-A máquina t2.micro da AWS é muito fraca para buildar o projeto. Nós construímos as imagens localmente e as enviamos para o Docker Hub.
-
 ```bash
 # 1. Compilar o .jar do Backend
-cd backend && ./mvnw clean package -DskipTests && cd ..
+cd backend && cd Finance && ./mvnw clean package -DskipTests && cd .. & cd.. 
 
 # 2. Construir as imagens do Backend e Frontend
 docker-compose build
@@ -144,7 +142,7 @@ docker-compose push
 
 ### 2. Configuração do Servidor (AWS EC2)
 
-1. Lançar uma instância **Amazon Linux 2023** (t2.micro).
+1. Lançar uma instância **Amazon Linux 2023** (t3.micro).
 2. Selecionar sua **Key Pair** (Chave SSH) (ed25519).
 3. Configurar o **Security Group** (Firewall) para abrir as portas:
    - **22** (SSH)
