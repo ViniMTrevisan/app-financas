@@ -6,15 +6,16 @@ O projeto foi desenvolvido com foco em boas práticas de arquitetura de software
 
 ## 📸 Aplicação em Funcionamento
 
+### Screenshots (Tema Escuro)
+
+![Foto do App](img.png)
+
 ### Vídeo de Demonstração
 
 Clique na imagem abaixo para ver o app em funcionamento:
 
 [![Demo do App em Vídeo](https://img.youtube.com/vi/qQKq-TrPQ7w/hqdefault.jpg)](https://www.youtube.com/watch?v=qQKq-TrPQ7w)
 
-### Screenshots (Tema Escuro)
-
-![Foto do App](img.png)
 
 ## 📊 Funcionalidades (Features)
 
