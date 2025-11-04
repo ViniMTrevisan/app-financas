@@ -42,20 +42,7 @@ services:
     networks:
       - finance-network
     restart: unless-stopped
-
-  frontend:
-    image: viniciusmtrevisan/finance-frontend
-    build:
-      context: ./frontend
-    container_name: frontend_finance
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    networks:
-      - finance-network
-    restart: unless-stopped
-
+    
 volumes:
   postgres_data: 
     driver: local
