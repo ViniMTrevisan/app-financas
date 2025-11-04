@@ -4,10 +4,17 @@ Este é um aplicativo Full-Stack completo para controle financeiro pessoal, cons
 
 O projeto foi desenvolvido com foco em boas práticas de arquitetura de software, separação de responsabilidades (Frontend, Backend, DB) e um deploy de nível profissional usando Docker, AWS e Vercel.
 
-## 📸 Aplicação em Funcionamento (Tema Escuro)
+## 📸 Aplicação em Funcionamento
 
-> `![Foto do App](/img.png)`
-> `Link para ver funcionamento: https://www.youtube.com/watch?v=qQKq-TrPQ7w`
+### Vídeo de Demonstração
+
+Clique na imagem abaixo para ver o app em funcionamento:
+
+[![Demo do App em Vídeo](https://img.youtube.com/vi/qQKq-TrPQ7w/hqdefault.jpg)](https://www.youtube.com/watch?v=qQKq-TrPQ7w)
+
+### Screenshots (Tema Escuro)
+
+![Foto do App](img.png)
 
 ## 📊 Funcionalidades (Features)
 
@@ -51,38 +58,7 @@ Este projeto utiliza uma arquitetura de microsserviços desacoplada.
 
 ## 🚀 Arquitetura de Deploy (Produção)
 
-O deploy foi desenhado para performance e escalabilidade, separando o Frontend (servido estaticamente) do Backend (servidor de API).
-
-```mermaid
-graph TD
-    A[Usuário no Navegador] --> B(Vercel: financas-app.vercel.app);
-    B --> C(Caddy: financasbackend.duckdns.org);
-    C -- HTTPS na Porta 443 --> D[Servidor AWS EC2];
-
-    subgraph Servidor AWS EC2
-        direction LR
-        D --> E{Rede Docker: finance-network};
-        
-        subgraph Container Caddy - Portas 80, 443
-            F[Caddy Service]
-        end
-
-        subgraph Container Backend - Porta 8081
-            G[Spring Boot API]
-        end
-
-        subgraph Container DB - Porta 5432
-            H[PostgreSQL]
-        end
-
-        E --> F;
-        E --> G;
-        E --> H;
-        
-        F -- "Reverse Proxy (CORS)" --> G;
-        G -- "JDBC" --> H;
-    end
-```
+O deploy foi desenhado para performance e escalabilidade, separando o Frontend (servido estaticamente na Vercel) do Backend (servidor de API, na EC2). 
 
 ## ⚡ Como Rodar (Desenvolvimento Local)
 
