@@ -6,9 +6,8 @@ O projeto foi desenvolvido com foco em boas práticas de arquitetura de software
 
 ## 📸 Aplicação em Funcionamento (Tema Escuro)
 
-> Recomendo que você tire um screenshot do seu app finalizado e coloque aqui.
-> 
-> Exemplo: `![Foto do App](https://img.png)`
+> `![Foto do App](/img.png)`
+> `Link para ver funcionamento: https://www.youtube.com/watch?v=qQKq-TrPQ7w`
 
 ## 📊 Funcionalidades (Features)
 
