@@ -23,8 +23,6 @@ services:
 
   backend:
     image: viniciusmtrevisan/finance-backend
-    build:
-      context: ./backend/Finance
     container_name: backend_finance
     env_file:
       - .env
@@ -42,20 +40,19 @@ services:
     networks:
       - finance-network
     restart: unless-stopped
-    
-    caddy:
-      image: caddy:2
-      container_name: caddy
-      restart: always
-      ports:
-        - "80:80"
-        - "443:443"
-      volumes:
-        - ./Caddyfile:/etc/caddy/Caddyfile
-        - caddy_data:/data
-        - caddy_config:/config
-      networks:
-        - finance-network
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - finance-network
 volumes:
   postgres_data: 
   caddy_data:
