@@ -4,6 +4,8 @@ services:
   postgres_db:
     image: postgres:15-alpine
     container_name: postgres_finance
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -13,7 +15,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - finance-network 
+      - finance-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: "10s"
@@ -24,25 +26,34 @@ services:
   backend:
     image: viniciusmtrevisan/finance-backend
     container_name: backend_finance
+    # *** CORREÇÃO 1: Dependências do Backend ***
+    # O backend precisa das variáveis de login do DB
     env_file:
       - .env
     depends_on:
       postgres_db:
         condition: service_healthy
     environment:
+      # O backend usa a URL interna do Docker para se conectar ao banco
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_DOCKER}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SERVER_PORT: ${SERVER_PORT}
-    ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER} # Use a variável do Postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD} # Use a variável do Postgres
+      # IMPORTANTE: Remover spring.jpa.hibernate.ddl-auto: update (risco alto em prod)
+      SERVER_PORT: 8081 # Fixar a porta interna para o Caddy saber
+    # Porta não precisa ser exposta para o HOST (apenas para o Caddy)
+    # ports:
+    #   - "8081:8081"
     networks:
       - finance-network
     restart: unless-stopped
+
   caddy:
     image: caddy:2
     container_name: caddy
+    # *** CORREÇÃO 2: Dependências do Caddy ***
+    # O Caddy deve esperar que o backend esteja LIGADO
+    depends_on:
+      - backend
     restart: always
     ports:
       - "80:80"
@@ -53,8 +64,9 @@ services:
       - caddy_config:/config
     networks:
       - finance-network
+
 volumes:
-  postgres_data: 
+  postgres_data:
   caddy_data:
   caddy_config:
 
