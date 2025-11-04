@@ -1,4 +1,4 @@
-financasbackend.duckdns.org {
+https://financasbackend.duckdns.org {
     reverse_proxy backend:8081
 
     header Access-Control-Allow-Origin "https://app-financas-vinidev.vercel.app"
