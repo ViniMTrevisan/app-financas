@@ -4,17 +4,11 @@ Este é um aplicativo Full-Stack completo para controle financeiro pessoal, cons
 
 O projeto foi desenvolvido com foco em boas práticas de arquitetura de software, separação de responsabilidades (Frontend, Backend, DB) e um deploy de nível profissional usando Docker, AWS e Vercel.
 
-## 📸 Aplicação em Funcionamento
+## 📸 Aplicação em Funcionamento (Tema Escuro)
 
-### Screenshots (Tema Escuro)
-
-![Foto do App](img.png)
-
-### Vídeo de Demonstração
-
-Clique na imagem abaixo para ver o app em funcionamento:
-
-[![Demo do App em Vídeo](https://img.youtube.com/vi/qQKq-TrPQ7w/hqdefault.jpg)](https://www.youtube.com/watch?v=qQKq-TrPQ7w)
+> ### Clique no print abaixo para ver o vídeo da aplicação:
+>
+> [![Foto do App](img.png)](https://www.youtube.com/watch?v=qQKq-TrPQ7w)
 
 
 ## 📊 Funcionalidades (Features)
