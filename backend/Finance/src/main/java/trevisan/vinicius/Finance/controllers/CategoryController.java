@@ -12,7 +12,6 @@ import trevisan.vinicius.Finance.services.CategoryService;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class CategoryController {
     private final CategoryService categoryService;
 
